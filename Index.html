@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>KymChon Gym Pro</title>
+<title>Gym Pro KymChon</title>
 <style>
 :root{
   --bg:#f7fafc; --card:#ffffff; --text:#0f172a; --muted:#475569;
@@ -225,5 +225,152 @@ if (window.matchMedia('(max-width: 560px)').matches){
   document.querySelectorAll('.day.collapsible').forEach(d=> d.classList.add('open'));
 }
 </script>
+
+<!-- VIDEO MAP START -->
+<script>
+(function() {
+  const videoMap = {"day nguc thanh don": "vcBig73ojpE", "bench press": "vcBig73ojpE", "day nguc ghe doc ta don": "", "incline dumbbell press": "", "ep nguc may cap": "JUDTGZh4rhg", "cable fly": "JUDTGZh4rhg", "hit xa kep dips nguc": "yN6Q1UI_xkE", "dips": "yN6Q1UI_xkE", "day cap tay sau": "_w-HpW70nSQ", "triceps pushdown": "_w-HpW70nSQ", "nam duoi tay sau thanh ez": "d_KZxkY_0cM", "skull crusher": "d_KZxkY_0cM", "keo xo truoc may cap": "SALxEARiMkw", "lat pulldown": "SALxEARiMkw", "cheo lung ta don 1 tay": "pYcpY20QaE8", "one arm dumbbell row": "pYcpY20QaE8", "cheo lung thanh don": "kBWAon7ItDw", "barbell row": "kBWAon7ItDw", "keo xo cam hep trung lap": "KgZqDuNx7rI", "neutral grip pulldown": "KgZqDuNx7rI", "cuon tay truoc thanh ez": "", "ez bar curl": "", "cuon ta don luan phien": "", "alternating dumbbell curl": "", "ganh dui thanh don": "vaMYBmJH-tw", "back squat": "vaMYBmJH-tw", "deadlift rumani thanh don": "jEy_czb3RKA", "romanian deadlift": "jEy_czb3RKA", "may day chan": "IZxyjW7MPJQ", "leg press": "IZxyjW7MPJQ", "buoc tan ta don": "", "lunge": "", "nam cuon gan kheo": "1Tq3QdYUuHs", "leg curl": "1Tq3QdYUuHs", "nhon bap chan dung ngoi": "YMmgqO8Jo-k", "calf raise": "YMmgqO8Jo-k", "plank": "F1C6qnGk-Ho", "dead bug": "WZ31D4DK0jI", "day nguc ghe doc thanh don": "O9x7xRhtA9Q", "incline barbell bench press": "O9x7xRhtA9Q", "day vai ta don ngoi": "qEwKCR5JCog", "dumbbell shoulder press": "qEwKCR5JCog", "ep nguc may": "", "chest press machine": "", "nang ngang vai ta don": "q5sNYB1Q6aM", "lateral raise": "q5sNYB1Q6aM", "keo mat may cap": "V8dZ3pyiCBo", "face pull": "V8dZ3pyiCBo", "hit dat": "S-WEd-DNmxw", "push up": "S-WEd-DNmxw", "superset a1 cuon tay truoc ghe scott thanh ez": "", "preacher curl": "", "superset a2 day tay sau tren dau day cap": "", "overhead rope extension": "", "superset b1 cuon ta don ghe doc": "", "incline dumbbell curl": "", "superset b2 chong day tay sau ghe": "jdFzYGmvDyg", "bench dip": "jdFzYGmvDyg", "superset c1 cuon bua ta don": "TwD-YGVP4Bk", "hammer curl": "TwD-YGVP4Bk", "superset c2 da tay sau ta don": "6SSN2OfbZE4", "triceps kickback": "6SSN2OfbZE4"};
+
+  function normalizeVN(s) {
+    return s
+      .normalize('NFD')
+      .replace(/\p{Diacritic}/gu, '')
+      .toLowerCase()
+      .replace(/superset\s+[abc]\d\)\s*/g, '')
+      .replace(/[^a-z0-9\s]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  function findVideoId(name) {
+    const key = normalizeVN(name);
+    if (videoMap[key]) return videoMap[key];
+    // try to use English alias in parentheses if present
+    const m = name.match(/\(([^)]+)\)/);
+    if (m) {
+      const k2 = normalizeVN(m[1]);
+      if (videoMap[k2]) return videoMap[k2];
+    }
+    return null;
+  }
+
+  // Create overlay once
+  const overlay = document.createElement('div');
+  overlay.id = 'ytOverlay';
+  overlay.setAttribute('aria-hidden','true');
+  overlay.innerHTML = `
+    <div class="ytBox" role="dialog" aria-label="Video hướng dẫn">
+      <button class="ytClose" aria-label="Đóng">×</button>
+      <div class="ytFrameWrap">
+        <iframe id="ytFrame" src="" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+
+  function openVideo(id) {
+    const src = `https://www.youtube-nocookie.com/embed/${id}?rel=0&modestbranding=1&autoplay=1`;
+    document.getElementById('ytFrame').src = src;
+    document.body.style.overflow = 'hidden';
+    overlay.classList.add('open');
+    overlay.setAttribute('aria-hidden','false');
+  }
+  function closeVideo() {
+    document.getElementById('ytFrame').src = '';
+    overlay.classList.remove('open');
+    overlay.setAttribute('aria-hidden','true');
+    document.body.style.overflow = '';
+  }
+  overlay.addEventListener('click', (e) => {
+    if (e.target.id === 'ytOverlay' || e.target.classList.contains('ytClose')) closeVideo();
+  });
+  window.addEventListener('keydown', (e)=>{ if (e.key==='Escape') closeVideo(); });
+
+  // Enhance each exercise
+  document.querySelectorAll('.exercise').forEach((ex) => {
+    const nameEl = ex.querySelector('.name');
+    if (!nameEl) return;
+    const name = nameEl.textContent.trim();
+    const vid = findVideoId(name);
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'video-btn';
+    btn.textContent = '▶ Video hướng dẫn';
+    if (vid) {
+      btn.addEventListener('click', (ev) => { ev.stopPropagation(); openVideo(vid); });
+      ex.setAttribute('data-video-id', vid);
+    } else {
+      // Fallback: open a YouTube search for the name
+      btn.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        const q = encodeURIComponent(name + ' form tutorial');
+        window.open('https://www.youtube.com/results?search_query=' + q, '_blank');
+      });
+      ex.setAttribute('data-video-id', '');
+    }
+    // Insert button at the end of the exercise block
+    ex.appendChild(btn);
+  });
+})();
+</script>
+<style>
+#ytOverlay {
+  position: fixed; inset: 0; background: rgba(15,23,42,.75);
+  display: grid; place-items: center; z-index: 9999;
+  opacity: 0; pointer-events: none; transition: opacity .25s ease;
+}
+#ytOverlay.open { opacity: 1; pointer-events: auto; }
+#ytOverlay .ytBox { background: #0b1220; border-radius: 16px; width: min(900px, 92vw); padding: 12px; box-shadow: 0 20px 60px rgba(0,0,0,.5); }
+#ytOverlay .ytFrameWrap { position: relative; width: 100%; padding-bottom: 56.25%; border-radius: 12px; overflow: hidden; }
+#ytOverlay iframe { position: absolute; inset: 0; width: 100%; height: 100%; }
+#ytOverlay .ytClose {
+  position: absolute; transform: translate(calc(50vw - 50%), -44vh); /* roughly top-right */
+  border: none; background: #111827; color: #fff; font-size: 28px; width: 44px; height: 44px; border-radius: 999px; cursor: pointer;
+}
+.video-btn {
+  margin-top: .5rem; padding: .45rem .75rem; border-radius: 999px; border: 1px solid #e2e8f0;
+  background: #f8fafc; color: #0f172a; font-size: .85rem; cursor: pointer;
+}
+.video-btn:hover { background: #eef6ff; border-color: #93c5fd; }
+</style>
+<!-- VIDEO MAP END -->
+
+
+<!-- HEADER SHRINK START -->
+<style>
+/* Smooth shrinking header on scroll */
+.header { transition: padding .25s ease, box-shadow .25s ease, transform .25s ease; }
+.header h1 { transition: font-size .25s ease, transform .25s ease; }
+.header p, .header .legend { transition: opacity .25s ease, height .25s ease, margin .25s ease; }
+.header .toolbar .btn { transition: padding .2s ease, font-size .2s ease; }
+
+.header.shrink { padding: .5rem .75rem; box-shadow: 0 4px 12px rgba(2,132,199,.06); }
+.header.shrink h1 { font-size: 1.15rem; }
+.header.shrink p { opacity: 0; height: 0; margin: 0; overflow: hidden; }
+.header.shrink .legend { opacity: 0; height: 0; margin: 0; overflow: hidden; }
+.header.shrink .toolbar { margin: .25rem 0 0; }
+.header.shrink .btn { padding: .35rem .6rem; font-size: .9rem; }
+</style>
+<script>
+(function(){
+  const header = document.querySelector('.header');
+  if (!header) return;
+  let ticking = false;
+  function apply(){
+    const shrink = window.scrollY > 40; // threshold
+    header.classList.toggle('shrink', shrink);
+    ticking = false;
+  }
+  window.addEventListener('scroll', () => {
+    if (!ticking) {
+      window.requestAnimationFrame(apply);
+      ticking = true;
+    }
+  }, { passive: true });
+  // initial state (e.g., reload mid-page)
+  apply();
+})();
+</script>
+<!-- HEADER SHRINK END -->
+
 </body>
 </html>
