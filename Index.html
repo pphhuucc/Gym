@@ -1,0 +1,229 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gym Pro KymChon</title>
+<style>
+:root{
+  --bg:#f7fafc; --card:#ffffff; --text:#0f172a; --muted:#475569;
+  --accent:#0ea5e9; --border:#e2e8f0;
+  --chest:#ef4444; --shoulder:#f59e0b; --back:#22c55e; --legs:#8b5cf6; --arms:#06b6d4;
+}
+*{box-sizing:border-box}
+body{margin:0;padding:2rem;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif;background:linear-gradient(120deg,#f0f9ff,#f6fefd);color:var(--text)}
+.container{max-width:70rem;margin:0 auto}
+
+.header{position:sticky;top:0;z-index:10;background:rgba(255,255,255,.8);backdrop-filter: blur(8px);
+  border:1px solid var(--border);border-radius:1rem;padding:1rem 1.25rem;margin-bottom:1rem;box-shadow:0 8px 24px rgba(2,132,199,.08);}
+.header h1{margin:0;letter-spacing:.3px;font-weight:800;font-size:1.6rem}
+.header p{margin:.3rem 0 0;color:var(--muted);font-size:.95rem}
+
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.card{background:var(--card);border:1px solid var(--border);border-radius:1rem;padding:1rem;box-shadow:0 6px 18px rgba(2,132,199,.06)}
+.card h2{margin:0 0 .75rem;font-size:1.1rem;color:#0b3b53}
+
+.legend{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:.4rem}
+.legend .legend-item{display:flex;align-items:center;gap:.5rem;padding:.4rem .6rem;border:1px dashed var(--border);border-radius:.75rem;font-size:.8rem;color:var(--muted)}
+
+.day{border:1px solid var(--border);border-radius:1rem;padding:.9rem;background:#fff;transform:translateY(.75rem);opacity:.001;transition:transform .6s cubic-bezier(.2,.8,.2,1),opacity .6s ease;will-change:transform,opacity}
+.day.is-visible{transform:translateY(0);opacity:1}
+.day h3{margin:0 0 .6rem;font-size:1rem;color:#0b3b53;letter-spacing:.2px;display:flex;align-items:center;gap:.5rem}
+.day.collapsible h3{cursor:pointer}
+
+.chip{display:inline-flex;align-items:center;gap:.4rem;font-size:.75rem;padding:.2rem .5rem;border-radius:999px;background:#eef2ff;color:#3730a3;border:1px solid #c7d2fe;position:relative;overflow:hidden;white-space:nowrap}
+.chip::after{content:"";width:.5rem;height:.5rem;border-radius:999px;background:#3730a3;margin-left:0}
+.chip-chest::after{background:var(--chest)}
+.chip-chest-shoulder::after{background:linear-gradient(90deg,var(--chest),var(--shoulder))}
+.chip-back::after{background:var(--back)}
+.chip-legs::after{background:var(--legs)}
+.chip-arms::after{background:var(--arms)}
+
+.exercise{
+  display:grid;grid-template-columns: 1.75rem 1.4fr 1fr;
+  grid-template-areas: "ic name meta";
+  gap:.6rem;align-items:center;
+  padding:.6rem .75rem;border-radius:.75rem;border:1px solid var(--border);
+  background:linear-gradient(180deg,#ffffff,#fbfdff);margin-bottom:.5rem;
+  transform:translateY(.5rem);opacity:.001;transition:transform .45s cubic-bezier(.2,.8,.2,1),opacity .45s ease, box-shadow .25s ease, transform .18s ease;will-change:transform,opacity}
+.exercise.is-visible{transform:translateY(0);opacity:1}
+.exercise:hover{box-shadow:0 10px 24px rgba(2,132,199,.10);transform:translateY(-2px)}
+.name{grid-area:name;font-weight:600}
+.meta{grid-area:meta;display:grid;grid-template-columns:.6fr .6fr .9fr;gap:.4rem;align-items:center;justify-content:flex-end}
+.meta .tag{display:inline-flex;align-items:center;gap:.35rem;font-size:.75rem;padding:.2rem .5rem;border-radius:.6rem;background:#f8fafc;border:1px solid #e2e8f0;color:#334155}
+.meta .tag b{font-weight:700}
+
+.note{margin:.35rem .125rem .5rem;color:#0f5132;background:#ecfeff;border-left:3px solid var(--accent);padding:.45rem .6rem;border-radius:.6rem;opacity:.001;transform:translateY(.5rem);transition:transform .45s, opacity .45s}
+.note.is-visible{opacity:1;transform:translateY(0)}
+
+/* ICONS */
+.ic{grid-area:ic;width:1.5rem;height:1.5rem;position:relative;transition:transform .2s ease}
+.ic:hover{transform:rotate(-4deg) scale(1.06)}
+.ic .bar{position:absolute;left:.2rem;right:.2rem;top:.6rem;height:.25rem;background:#0f172a;border-radius:.2rem;animation: barpulse 1.6s ease-in-out infinite both}
+.ic .plate{position:absolute;top:.35rem;width:.38rem;height:.65rem;background:#0f172a;border-radius:.1rem}
+.ic .plate.left{left:0} .plate.right{right:0}
+@keyframes barpulse{0%,100%{opacity:.85}50%{opacity:1}}
+
+/* Dumbbell */
+.ic.dumbbell .bar{left:.38rem;right:.38rem}
+.ic.dumbbell .plate{width:.32rem;height:.55rem;top:.42rem}
+
+/* Cable */
+.ic.cable::before{content:"";position:absolute;left:.65rem;top:.12rem;width:.12rem;height:1.1rem;background:#0f172a;border-radius:.06rem;animation:drop 2s ease-in-out infinite}
+.ic.cable::after{content:"";position:absolute;left:.35rem;top:.12rem;width:.65rem;height:.65rem;border:.12rem solid #0f172a;border-radius:50%;animation:pulley 3.5s linear infinite}
+@keyframes drop{0%{height:.25rem}50%{height:1.1rem}100%{height:.25rem}}
+@keyframes pulley{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+
+/* Machine */
+.ic.machine{border:.12rem solid #0f172a;border-radius:.25rem;animation: breathe 3s ease-in-out infinite}
+.ic.machine::before{content:"";position:absolute;left:.25rem;right:.25rem;top:.5rem;height:.25rem;background:#0f172a;border-radius:.2rem}
+@keyframes breathe{0%,100%{box-shadow:0 0 0 rgba(14,165,233,0)}50%{box-shadow:0 0 0 .25rem rgba(14,165,233,.12)}}
+
+/* Bodyweight */
+.ic.body::before{content:"";position:absolute;left:.55rem;top:.1rem;width:.25rem;height:.25rem;background:#0f172a;border-radius:50%}
+.ic.body::after{content:"";position:absolute;left:.67rem;top:.38rem;width:.12rem;height:.75rem;background:#0f172a}
+.ic.body .arm1,.ic.body .arm2,.ic.body .leg1,.ic.body .leg2{content:"";position:absolute;width:.12rem;height:.5rem;background:#0f172a;border-radius:.06rem;animation:limb 1.8s ease-in-out infinite}
+.ic.body .arm1{left:.4rem;top:.5rem;transform-origin:.06rem 0}
+.ic.body .arm2{left:.9rem;top:.5rem;transform-origin:.06rem 0;animation-delay:.2s}
+.ic.body .leg1{left:.55rem;top:.75rem;transform-origin:.06rem 0;animation-delay:.1s}
+.ic.body .leg2{left:.8rem;top:.75rem;transform-origin:.06rem 0;animation-delay:.3s}
+@keyframes limb{0%,100%{transform:rotate(0deg)}50%{transform:rotate(12deg)}}
+
+/* Calf */
+.ic.calf::before{content:"";position:absolute;left:.38rem;top:.9rem;width:.65rem;height:.25rem;background:#0f172a;border-radius:.2rem .2rem .35rem .35rem;animation:step 1.2s ease-in-out infinite}
+@keyframes step{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+
+/* Toolbar (mobile friendly) */
+.toolbar{display:flex;gap:.6rem;align-items:center;margin:.6rem 0 .8rem;flex-wrap:wrap}
+.btn{background:#0ea5e9;color:#fff;border:none;padding:.5rem .75rem;border-radius:.6rem;font-weight:700;cursor:pointer;box-shadow:0 6px 16px rgba(2,132,199,.25);transition:transform .15s ease, box-shadow .15s ease}
+.btn:hover{transform:translateY(-1px);box-shadow:0 10px 22px rgba(2,132,199,.35)}
+.btn.outline{background:#fff;color:#0ea5e9;border:1px solid #bae6fd}
+
+.footer{text-align:center;color:var(--muted);margin-top:1rem;font-size:.8rem}
+
+/* ------- Responsive tweaks ------- */
+@media (max-width: 900px){
+  body{padding:1.25rem}
+  .grid{grid-template-columns:1fr}
+  .header h1{font-size:1.35rem}
+}
+@media (max-width: 560px){
+  .exercise{grid-template-columns: 2rem 1fr; grid-template-areas:
+    "ic name"
+    "ic meta"; align-items:start}
+  .ic{width:2rem;height:2rem}
+  .name{font-size:.95rem;line-height:1.25rem}
+  .meta{grid-template-columns: 1fr; justify-content:flex-start}
+  .meta .tag{font-size:.8rem}
+  .legend .legend-item{font-size:.75rem}
+  .header{padding:.75rem 1rem}
+  .btn{padding:.5rem .7rem}
+  .day.collapsible .exercise, .day.collapsible .note{display:none}
+  .day.collapsible.open .exercise, .day.collapsible.open .note{display:block}
+}
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+@media print{ body{background:#fff;padding:12mm} .grid{grid-template-columns:1fr;gap:12px} }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>🎯 LỊCH TẬP 5 BUỔI / TUẦN — Icon + Animation + Responsive</h1>
+    <p>Tối ưu cho điện thoại: layout gọn, nút bật/tắt animation, có thể thu gọn từng ngày.</p>
+    <div class="toolbar">
+      <button class="btn" id="toggle-anim">Tắt Animation</button>
+      <button class="btn outline" id="toggle-collapse">Thu gọn / Mở rộng tất cả</button>
+      <button class="btn outline" onclick="window.print()">In / Lưu PDF</button>
+    </div>
+    <div class="legend">
+      <div class="legend-item"><div class="ic barbell"><div class="bar"></div><div class="plate left"></div><div class="plate right"></div></div> Thanh đòn / EZ</div>
+      <div class="legend-item"><div class="ic dumbbell"><div class="bar"></div><div class="plate left"></div><div class="plate right"></div></div> Tạ đơn</div>
+      <div class="legend-item"><div class="ic cable"></div> Máy cáp / pulley</div>
+      <div class="legend-item"><div class="ic machine"></div> Máy chuyên dụng</div>
+      <div class="legend-item"><div class="ic body"><div class="arm1"></div><div class="arm2"></div><div class="leg1"></div><div class="leg2"></div></div> Trọng lượng cơ thể</div>
+      <div class="legend-item"><div class="ic calf"></div> Bắp chân</div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>🧭 Nguyên tắc chung</h2>
+      <div class="legend" style="display:grid;grid-template-columns:150px 1fr;gap:.5rem .75rem;margin-top:.4rem">
+        <div><strong>Khởi động</strong></div><div>5–8' cardio nhẹ + 1–2 hiệp nhẹ bài nặng đầu buổi</div>
+        <div><strong>Tiến bộ</strong></div><div>Hoàn thành rep tối đa ở ≥2 hiệp → tăng tạ 2–5% tuần sau</div>
+        <div><strong>Tempo</strong></div><div>Xuống 2–3s – dừng 0–1s – lên nhanh có kiểm soát</div>
+        <div><strong>An toàn</strong></div><div>Giữ cột sống trung lập; vai ép sau & xuống; core căng</div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>📌 Lưu ý nhanh</h2>
+      <div class="note reveal" data-reveal="note">Ngày Ngực & Vai (Thứ 5) hạn chế cô lập tay sau, vì Thứ 2 đã đánh nặng tay sau.</div>
+      <div class="note reveal" data-reveal="note">Ngày Chân: nếu không squat gánh, dùng Front/Goblet/Hack Squat.</div>
+      <div class="note reveal" data-reveal="note">Ngày Lưng: có thể thay Lat Pulldown bằng Pull-up 3×tối đa nếu lên xà tốt.</div>
+    </div>
+  </div>
+  <div style="height:0.75rem"></div>
+<div class="day reveal collapsible" data-reveal="day"><h3>Thứ 2 — Ngực &amp; Tay sau <span class="chip chip-chest">Ngực &amp; Tay sau</span></h3><div class="exercise reveal" data-reveal="exercise" style="transition-delay:0ms" title="Barbell / thanh đòn"><div class="ic barbell"><div class="bar"></div><div class="plate left"></div><div class="plate right"></div></div><div class="name">Đẩy ngực thanh đòn (Bench Press)</div><div class="meta"><span class="tag"><b>Set×Reps:</b> 4×5–8</span><span class="tag">Nghỉ: 2–3’</span><span class="tag"><b>Thiết bị:</b> Thanh đòn + ghế</span></div></div><div class="exercise reveal" data-reveal="exercise" style="transition-delay:40ms" title="Dumbbell / tạ đơn"><div class="ic dumbbell"><div class="bar"></div><div class="plate left"></div><div class="plate right"></div></div><div class="name">Đẩy ngực ghế dốc tạ đơn (Incline DB Press)</div><div class="meta"><span class="tag"><b>Set×Reps:</b> 3×8–10</span><span class="tag">Nghỉ: —</span><span class="tag"><b>Thiết bị:</b> Tạ đơn + ghế dốc</span></div></div><div class="exercise reveal" data-reveal="exercise" style="transition-delay:80ms" title="Máy cáp / pulley"><div class="ic cable"></div><div class="name">Ép ngực máy cáp (Cable Fly)</div><div class="meta"><span class="tag"><b>Set×Reps:</b> 3×12–15</span><span class="tag">Nghỉ: —</span><span class="tag"><b>Thiết bị:</b> Máy cáp</span></div></div><div class="exercise reveal" data-reveal="exercise" style="transition-delay:120ms" title="Máy chuyên dụng"><div class="ic machine"></div><div class="name">Hít xà kép/Dips (ngực)</div><div class="meta"><span class="tag"><b>Set×Reps:</b> 3×6–10</span><span class="tag">Nghỉ: —</span><span class="tag"><b>Thiết bị:</b> Xà kép / máy hỗ trợ</span></div></div><div class="note reveal" data-reveal="note" style="transition-delay:160ms">Có thể dùng máy hỗ trợ</div><div class="exercise reveal" data-reveal="exercise" style="transition-delay:160ms" title="Máy cáp / pulley"><div class="ic cable"></div><div class="name">Đẩy cáp tay sau (Triceps Pushdown)</div><div class="meta"><span class="tag"><b>Set×Reps:</b> 3×10–12</span><span class="tag">Nghỉ: —</span><span class="tag"><b>Thiết bị:</b> Máy cáp</span></div></div><div class="exercise reveal" data-reveal="exercise" style="transition-delay:200ms" title="Barbell / thanh đòn"><div class="ic barbell"><div class="bar"></div><div class="plate left"></div><div class="plate right"></div></div><div class="name">Nằm duỗi tay sau thanh EZ (Skull Crusher)</div><div class="meta"><span class="tag"><b>Set×Reps:</b> 3×8–10</span><span class="tag">Nghỉ: —</span><span class="tag"><b>Thiết bị:</b> Thanh EZ + ghế</span></div></div><div class="note reveal" data-reveal="note" style="transition-delay:240ms">Thay thế: đẩy ngực máy; hít đất gánh/đeo tạ; dây kháng lực cho tay sau</div></div><div style="height:.6rem"></div><div class="day reveal collapsible" data-reveal="day"><h3>Thứ 3 — Lưng xô &amp; Tay trước <span class="chip chip-back">Lưng xô &amp; Tay trước</span></h3><div class="exercise reveal" data-reveal="exercise" style="transition-delay:0ms" title="Máy cáp / pulley"><div class="ic cable"></div><div class="name">Kéo xô trước – máy cáp (Lat Pulldown)</div><div class="meta"><span class="tag"><b>Set×Reps:</b> 4×8–12</span><span class="tag">Nghỉ: —</span><span class="tag"><b>Thiết bị:</b> Máy cáp</span></div></div><div class="note reveal" data-reveal="note" style="transition-delay:40ms">Nâng cao: thay bằng Kéo xà đơn 3×tối đa nếu lên xà tốt</div><div class="exercise reveal" data-reveal="exercise" style="transition-delay:40ms" title="Dumbbell / tạ đơn"><div class="ic dumbbell"><div class="bar"></div><div class="plate left"></div><div class="plate right"></div></div><div class="name">Chèo lưng tạ đơn 1 tay (DB Row)</div><div class="meta"><span class="tag"><b>Set×Reps:</b> 3×8–12 mỗi bên</span><span class="tag">Nghỉ: —</span><span class="tag"><b>Thiết bị:</b> Tạ đơn + ghế</span></div></div><div class="exercise reveal" data-reveal="exercise" style="transition-delay:80ms" title="Barbell / thanh đòn"><div class="ic barbell"><div class="bar"></div><div class="plate left"></div><div class="plate right"></div></div><div class="name">Chèo lưng thanh đòn (Barbell Row)</div><div class="meta"><span class="tag"><b>Set×Reps:</b> 3×6–8</span><span class="tag">Nghỉ: —</span><span class="tag"><b>Thiết bị:</b> Thanh đòn</span></div></div><div class="exercise reveal" data-reveal="exercise" style="transition-delay:120ms" title="Máy cáp / pulley"><div class="ic cable"></div><div class="name">Kéo xô cầm hẹp/Trung lập (Neutral Grip Pulldown)</div><div class="meta"><span class="tag"><b>Set×Reps:</b> 3×10–12</span><span class="tag">Nghỉ: —</span><span class="tag"><b>Thiết bị:</b> Máy cáp</span></div></div><div class="exercise reveal" data-reveal="exercise" style="transition-delay:160ms" title="Barbell / thanh đòn"><div class="ic barbell"><div class="bar"></div><div class="plate left"></div><div class="plate right"></div></div><div class="name">Cuốn tay trước thanh EZ (EZ-Bar Curl)</div><div class="meta"><span class="tag"><b>Set×Reps:</b> 3×8–12</span><span class="tag">Nghỉ: —</span><span class="tag"><b>Thiết bị:</b> Thanh EZ</span></div></div><div class="exercise reveal" data-reveal="exercise" style="transition-delay:200ms" title="Dumbbell / tạ đơn"><div class="ic dumbbell"><div class="bar"></div><div class="plate left"></div><div class="plate right"></div></div><div class="name">Cuốn tạ đơn luân phiên (Alternating DB Curl)</div><div class="meta"><span class="tag"><b>Set×Reps:</b> 3×10–12 mỗi tay</span><span class="tag">Nghỉ: —</span><span class="tag"><b>Thiết bị:</b> Tạ đơn</span></div></div></div><div style="height:.6rem"></div><div class="day reveal collapsible" data-reveal="day"><h3>Thứ 4 — Chân <span class="chip chip-legs">Chân</span></h3><div class="exercise reveal" data-reveal="exercise" style="transition-delay:0ms" title="Barbell / thanh đòn"><div class="ic barbell"><div class="bar"></div><div class="plate left"></div><div class="plate right"></div></div><div class="name">Gánh đùi thanh đòn (Back Squat)</div><div class="meta"><span class="tag"><b>Set×Reps:</b> 4×5–8</span><span class="tag">Nghỉ: 2–3’</span><span class="tag"><b>Thiết bị:</b> Thanh đòn + giá đỡ</span></div></div><div class="note reveal" data-reveal="note" style="transition-delay:40ms">Thay thế: Front Squat / Goblet Squat / Hack Squat</div><div class="exercise reveal" data-reveal="exercise" style="transition-delay:40ms" title="Barbell / thanh đòn"><div class="ic barbell"><div class="bar"></div><div class="plate left"></div><div class="plate right"></div></div><div class="name">Deadlift Rumani – thanh đòn (RDL)</div><div class="meta"><span class="tag"><b>Set×Reps:</b> 3×8–10</span><span class="tag">Nghỉ: —</span><span class="tag"><b>Thiết bị:</b> Thanh đòn</span></div></div><div class="exercise reveal" data-reveal="exercise" style="transition-delay:80ms" title="Máy chuyên dụng"><div class="ic machine"></div><div class="name">Máy đẩy chân (Leg Press)</div><div class="meta"><span class="tag"><b>Set×Reps:</b> 3×10–15</span><span class="tag">Nghỉ: —</span><span class="tag"><b>Thiết bị:</b> Máy đẩy chân</span></div></div><div class="exercise reveal" data-reveal="exercise" style="transition-delay:120ms" title="Dumbbell / tạ đơn"><div class="ic dumbbell"><div class="bar"></div><div class="plate left"></div><div class="plate right"></div></div><div class="name">Bước tấn (Lunge) – tạ đơn</div><div class="meta"><span class="tag"><b>Set×Reps:</b> 3×8–12 mỗi bên</span><span class="tag">Nghỉ: —</span><span class="tag"><b>Thiết bị:</b> Tạ đơn</span></div></div><div class="exercise reveal" data-reveal="exercise" style="transition-delay:160ms" title="Máy chuyên dụng"><div class="ic machine"></div><div class="name">Nằm cuốn gân kheo (Leg Curl)</div><div class="meta"><span class="tag"><b>Set×Reps:</b> 3×10–12</span><span class="tag">Nghỉ: —</span><span class="tag"><b>Thiết bị:</b> Máy cuốn gân kheo</span></div></div><div class="exercise reveal" data-reveal="exercise" style="transition-delay:200ms" title="Barbell / thanh đòn"><div class="ic barbell"><div class="bar"></div><div class="plate left"></div><div class="plate right"></div></div><div class="name">Nhón bắp chân đứng/ngồi (Calf Raise)</div><div class="meta"><span class="tag"><b>Set×Reps:</b> 4×12–15</span><span class="tag">Nghỉ: —</span><span class="tag"><b>Thiết bị:</b> Máy/tạ đơn/thanh đòn</span></div></div><div class="exercise reveal" data-reveal="exercise" style="transition-delay:240ms" title="Trọng lượng cơ thể"><div class="ic body"><div class="arm1"></div><div class="arm2"></div><div class="leg1"></div><div class="leg2"></div></div><div class="name">Core (chọn 1): Plank</div><div class="meta"><span class="tag"><b>Set×Reps:</b> 3×30–45s</span><span class="tag">Nghỉ: —</span><span class="tag"><b>Thiết bị:</b> Thảm tập</span></div></div><div class="note reveal" data-reveal="note" style="transition-delay:280ms">Hoặc Dead Bug 3×10–12 mỗi bên</div></div><div style="height:.6rem"></div><div class="day reveal collapsible" data-reveal="day"><h3>Thứ 5 — Ngực &amp; Vai <span class="chip chip-chest-shoulder">Ngực &amp; Vai</span></h3><div class="exercise reveal" data-reveal="exercise" style="transition-delay:0ms" title="Barbell / thanh đòn"><div class="ic barbell"><div class="bar"></div><div class="plate left"></div><div class="plate right"></div></div><div class="name">Đẩy ngực ghế dốc thanh đòn (Incline Barbell Press)</div><div class="meta"><span class="tag"><b>Set×Reps:</b> 4×6–8</span><span class="tag">Nghỉ: —</span><span class="tag"><b>Thiết bị:</b> Thanh đòn + ghế dốc</span></div></div><div class="exercise reveal" data-reveal="exercise" style="transition-delay:40ms" title="Dumbbell / tạ đơn"><div class="ic dumbbell"><div class="bar"></div><div class="plate left"></div><div class="plate right"></div></div><div class="name">Đẩy vai tạ đơn ngồi (DB Shoulder Press)</div><div class="meta"><span class="tag"><b>Set×Reps:</b> 3×8–10</span><span class="tag">Nghỉ: —</span><span class="tag"><b>Thiết bị:</b> Tạ đơn + ghế</span></div></div><div class="exercise reveal" data-reveal="exercise" style="transition-delay:80ms" title="Máy chuyên dụng"><div class="ic machine"></div><div class="name">Ép ngực máy (Chest Press Machine)</div><div class="meta"><span class="tag"><b>Set×Reps:</b> 3×10–12</span><span class="tag">Nghỉ: —</span><span class="tag"><b>Thiết bị:</b> Máy ép ngực</span></div></div><div class="exercise reveal" data-reveal="exercise" style="transition-delay:120ms" title="Dumbbell / tạ đơn"><div class="ic dumbbell"><div class="bar"></div><div class="plate left"></div><div class="plate right"></div></div><div class="name">Nâng ngang vai – tạ đơn (Lateral Raise)</div><div class="meta"><span class="tag"><b>Set×Reps:</b> 4×12–15</span><span class="tag">Nghỉ: 0.75–1’</span><span class="tag"><b>Thiết bị:</b> Tạ đơn</span></div></div><div class="note reveal" data-reveal="note" style="transition-delay:160ms">Nghỉ ngắn 45–60 giây</div><div class="exercise reveal" data-reveal="exercise" style="transition-delay:160ms" title="Máy cáp / pulley"><div class="ic cable"></div><div class="name">Kéo mặt – máy cáp (Face Pull)</div><div class="meta"><span class="tag"><b>Set×Reps:</b> 3×12–15</span><span class="tag">Nghỉ: —</span><span class="tag"><b>Thiết bị:</b> Máy cáp + dây</span></div></div><div class="exercise reveal" data-reveal="exercise" style="transition-delay:200ms" title="Trọng lượng cơ thể"><div class="ic body"><div class="arm1"></div><div class="arm2"></div><div class="leg1"></div><div class="leg2"></div></div><div class="name">Hít đất chậm kiểm soát (Push-up)</div><div class="meta"><span class="tag"><b>Set×Reps:</b> 2×tối đa</span><span class="tag">Nghỉ: —</span><span class="tag"><b>Thiết bị:</b> Trọng lượng cơ thể</span></div></div><div class="note reveal" data-reveal="note" style="transition-delay:240ms">Không tới kiệt quệ; hạn chế bài cô lập tay sau ngày này</div></div><div style="height:.6rem"></div><div class="day reveal collapsible" data-reveal="day"><h3>Thứ 6 — Tay trước &amp; Tay sau <span class="chip chip-arms">Tay trước &amp; Tay sau</span></h3><div class="exercise reveal" data-reveal="exercise" style="transition-delay:0ms" title="Barbell / thanh đòn"><div class="ic barbell"><div class="bar"></div><div class="plate left"></div><div class="plate right"></div></div><div class="name">Superset A1) Cuốn tay trước ghế Scott – thanh EZ (Preacher Curl)</div><div class="meta"><span class="tag"><b>Set×Reps:</b> 8–12</span><span class="tag">Nghỉ: —</span><span class="tag"><b>Thiết bị:</b> Ghế Scott + thanh EZ</span></div></div><div class="note reveal" data-reveal="note" style="transition-delay:40ms">Thực hiện 3–4 vòng Superset A</div><div class="exercise reveal" data-reveal="exercise" style="transition-delay:40ms" title="Máy cáp / pulley"><div class="ic cable"></div><div class="name">Superset A2) Đẩy tay sau trên đầu – dây cáp (Overhead Rope Extension)</div><div class="meta"><span class="tag"><b>Set×Reps:</b> 10–12</span><span class="tag">Nghỉ: —</span><span class="tag"><b>Thiết bị:</b> Máy cáp + dây</span></div></div><div class="note reveal" data-reveal="note" style="transition-delay:80ms">Liền sau A1, nghỉ khi hết vòng</div><div class="exercise reveal" data-reveal="exercise" style="transition-delay:80ms" title="Dumbbell / tạ đơn"><div class="ic dumbbell"><div class="bar"></div><div class="plate left"></div><div class="plate right"></div></div><div class="name">Superset B1) Cuốn tạ đơn ghế dốc (Incline DB Curl)</div><div class="meta"><span class="tag"><b>Set×Reps:</b> 8–12</span><span class="tag">Nghỉ: —</span><span class="tag"><b>Thiết bị:</b> Tạ đơn + ghế dốc</span></div></div><div class="note reveal" data-reveal="note" style="transition-delay:120ms">Thực hiện 3–4 vòng Superset B</div><div class="exercise reveal" data-reveal="exercise" style="transition-delay:120ms" title="Trọng lượng cơ thể"><div class="ic body"><div class="arm1"></div><div class="arm2"></div><div class="leg1"></div><div class="leg2"></div></div><div class="name">Superset B2) Chống đẩy tay sau/ghế (Bench Dip)</div><div class="meta"><span class="tag"><b>Set×Reps:</b> 10–15</span><span class="tag">Nghỉ: —</span><span class="tag"><b>Thiết bị:</b> Ghế/khung + tạ bổ sung (nếu dễ)</span></div></div><div class="note reveal" data-reveal="note" style="transition-delay:160ms">Có thể thêm tạ</div><div class="exercise reveal" data-reveal="exercise" style="transition-delay:160ms" title="Dumbbell / tạ đơn"><div class="ic dumbbell"><div class="bar"></div><div class="plate left"></div><div class="plate right"></div></div><div class="name">Finisher C1) Cuốn búa – tạ đơn (Hammer Curl)</div><div class="meta"><span class="tag"><b>Set×Reps:</b> 12–15</span><span class="tag">Nghỉ: 0.5–0.75’</span><span class="tag"><b>Thiết bị:</b> Tạ đơn</span></div></div><div class="note reveal" data-reveal="note" style="transition-delay:200ms">2–3 vòng, nghỉ ngắn 30–45s</div><div class="exercise reveal" data-reveal="exercise" style="transition-delay:200ms" title="Dumbbell / tạ đơn"><div class="ic dumbbell"><div class="bar"></div><div class="plate left"></div><div class="plate right"></div></div><div class="name">Finisher C2) Đá tay sau – tạ đơn (DB Kickback)</div><div class="meta"><span class="tag"><b>Set×Reps:</b> 12–15</span><span class="tag">Nghỉ: 0.5–0.75’</span><span class="tag"><b>Thiết bị:</b> Tạ đơn</span></div></div><div class="note reveal" data-reveal="note" style="transition-delay:240ms">2–3 vòng, nghỉ ngắn 30–45s</div></div><div style="height:.6rem"></div>
+  <div class="footer">© Lịch tập có biểu tượng + animation — Responsive cho di động. In A4 hoặc lưu PDF từ trình duyệt.</div>
+</div>
+
+<script>
+// IntersectionObserver để reveal khi cuộn
+const io = new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      e.target.classList.add('is-visible');
+      io.unobserve(e.target);
+    }
+  })
+}, { threshold: .08 });
+
+document.querySelectorAll('.reveal').forEach(el=> io.observe(el));
+
+// Toggle animation
+const btn = document.getElementById('toggle-anim');
+let animOn = true;
+btn.addEventListener('click', ()=>{
+  animOn = !animOn;
+  document.documentElement.style.setProperty('scroll-behavior', animOn ? 'smooth' : 'auto');
+  if(animOn){
+    document.body.classList.remove('no-anim');
+    btn.textContent = 'Tắt Animation';
+    document.querySelectorAll('.reveal:not(.is-visible)').forEach(el=> io.observe(el));
+  }else{
+    document.body.classList.add('no-anim');
+    btn.textContent = 'Bật Animation';
+    document.querySelectorAll('.reveal').forEach(el=> el.classList.add('is-visible'));
+  }
+});
+
+// Collapse/expand days (good for mobile)
+const toggleCollapse = document.getElementById('toggle-collapse');
+let collapsed = false;
+toggleCollapse.addEventListener('click', ()=>{
+  collapsed = !collapsed;
+  document.querySelectorAll('.day.collapsible').forEach(day=>{
+    day.classList.toggle('open', !collapsed);
+  });
+});
+
+// Tap header to toggle that day
+document.querySelectorAll('.day.collapsible h3').forEach(h3=>{
+  h3.addEventListener('click', ()=>{
+    const day = h3.closest('.day.collapsible');
+    day.classList.toggle('open');
+  });
+});
+
+// Default: if screen <= 560px, start collapsed
+if (window.matchMedia('(max-width: 560px)').matches){
+  document.querySelectorAll('.day.collapsible').forEach(d=> d.classList.remove('open'));
+}else{
+  document.querySelectorAll('.day.collapsible').forEach(d=> d.classList.add('open'));
+}
+</script>
+</body>
+</html>
